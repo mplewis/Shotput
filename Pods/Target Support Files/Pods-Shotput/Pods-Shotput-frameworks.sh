@@ -85,7 +85,9 @@ strip_invalid_archs() {
 
 if [[ "$CONFIGURATION" == "Debug" ]]; then
   install_framework "Pods-Shotput/Alamofire.framework"
+  install_framework "Pods-Shotput/Eureka.framework"
 fi
 if [[ "$CONFIGURATION" == "Release" ]]; then
   install_framework "Pods-Shotput/Alamofire.framework"
+  install_framework "Pods-Shotput/Eureka.framework"
 fi
