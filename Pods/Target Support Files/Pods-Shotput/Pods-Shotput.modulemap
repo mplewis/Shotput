@@ -1,0 +1,6 @@
+framework module Pods_Shotput {
+  umbrella header "Pods-Shotput-umbrella.h"
+
+  export *
+  module * { export * }
+}
