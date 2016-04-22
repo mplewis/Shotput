@@ -2,5 +2,5 @@ use_frameworks!
 
 target 'Shotput' do
   pod 'Alamofire'
-  pod 'Eureka'
+  pod 'XLForm'
 end
