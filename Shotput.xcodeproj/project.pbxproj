@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		365418171CC9D78A00565E5F /* SingleRequestViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 365418161CC9D78A00565E5F /* SingleRequestViewController.swift */; };
+		365418201CCAD03E00565E5F /* HeaderRowAndVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3654181F1CCAD03E00565E5F /* HeaderRowAndVC.swift */; };
 		3682EF591CC7CF3000F93520 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3682EF581CC7CF3000F93520 /* AppDelegate.swift */; };
 		3682EF5B1CC7CF3000F93520 /* MasterViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3682EF5A1CC7CF3000F93520 /* MasterViewController.swift */; };
 		3682EF601CC7CF3000F93520 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 3682EF5E1CC7CF3000F93520 /* Main.storyboard */; };
@@ -37,6 +38,7 @@
 
 /* Begin PBXFileReference section */
 		365418161CC9D78A00565E5F /* SingleRequestViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SingleRequestViewController.swift; sourceTree = "<group>"; };
+		3654181F1CCAD03E00565E5F /* HeaderRowAndVC.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HeaderRowAndVC.swift; sourceTree = "<group>"; };
 		3682EF551CC7CF3000F93520 /* Shotput.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Shotput.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		3682EF581CC7CF3000F93520 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		3682EF5A1CC7CF3000F93520 /* MasterViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MasterViewController.swift; sourceTree = "<group>"; };
@@ -109,6 +111,7 @@
 				3682EF581CC7CF3000F93520 /* AppDelegate.swift */,
 				3682EF5A1CC7CF3000F93520 /* MasterViewController.swift */,
 				365418161CC9D78A00565E5F /* SingleRequestViewController.swift */,
+				3654181F1CCAD03E00565E5F /* HeaderRowAndVC.swift */,
 				3682EF5E1CC7CF3000F93520 /* Main.storyboard */,
 				3682EF611CC7CF3000F93520 /* Assets.xcassets */,
 				3682EF631CC7CF3000F93520 /* LaunchScreen.storyboard */,
@@ -334,6 +337,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				365418201CCAD03E00565E5F /* HeaderRowAndVC.swift in Sources */,
 				365418171CC9D78A00565E5F /* SingleRequestViewController.swift in Sources */,
 				3682EF5B1CC7CF3000F93520 /* MasterViewController.swift in Sources */,
 				3682EF591CC7CF3000F93520 /* AppDelegate.swift in Sources */,
