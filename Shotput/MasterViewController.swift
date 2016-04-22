@@ -1,16 +1,8 @@
-//
-//  MasterViewController.swift
-//  Shotput
-//
-//  Created by Matthew Lewis on 4/20/16.
-//  Copyright © 2016 Kestrel Development. All rights reserved.
-//
-
 import UIKit
 
 class MasterViewController: UITableViewController {
 
-    var detailViewController: DetailViewController? = nil
+    var singleRequestViewController: SingleRequestViewController? = nil
     var objects = [AnyObject]()
 
 
@@ -19,11 +11,11 @@ class MasterViewController: UITableViewController {
         // Do any additional setup after loading the view, typically from a nib.
         self.navigationItem.leftBarButtonItem = self.editButtonItem()
 
-        let addButton = UIBarButtonItem(barButtonSystemItem: .Add, target: self, action: "insertNewObject:")
+        let addButton = UIBarButtonItem(barButtonSystemItem: .Add, target: self, action: #selector(insertNewObject))
         self.navigationItem.rightBarButtonItem = addButton
         if let split = self.splitViewController {
             let controllers = split.viewControllers
-            self.detailViewController = (controllers[controllers.count-1] as! UINavigationController).topViewController as? DetailViewController
+            self.singleRequestViewController = (controllers[controllers.count-1] as! UINavigationController).topViewController as? SingleRequestViewController
         }
     }
 
@@ -47,10 +39,8 @@ class MasterViewController: UITableViewController {
 
     override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
         if segue.identifier == "showDetail" {
-            if let indexPath = self.tableView.indexPathForSelectedRow {
-                let object = objects[indexPath.row] as! NSDate
-                let controller = (segue.destinationViewController as! UINavigationController).topViewController as! DetailViewController
-                controller.detailItem = object
+            if let _ = self.tableView.indexPathForSelectedRow {
+                let controller = (segue.destinationViewController as! UINavigationController).topViewController!
                 controller.navigationItem.leftBarButtonItem = self.splitViewController?.displayModeButtonItem()
                 controller.navigationItem.leftItemsSupplementBackButton = true
             }
