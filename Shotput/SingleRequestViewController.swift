@@ -8,54 +8,49 @@ class SingleRequestViewController: XLFormViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        self.form = XLFormDescriptor(title: "Add Event")
+        let form = XLFormDescriptor(title: "Add Event")
         var section: XLFormSectionDescriptor
         var row: XLFormRowDescriptor
         
         section = XLFormSectionDescriptor.formSection()
         
-        row = XLFormRowDescriptor(tag: "title", rowType: XLFormRowDescriptorTypeText)
-        row.cellConfigAtConfigure["textField.placeholder"] = "Title"
+        row = XLFormRowDescriptor(tag: nil, rowType:XLFormRowDescriptorTypeSelectorPush, title: "Method")
+        var selectorOptions: [XLFormOptionsObject] = []
+        let methods = ["GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"]
+        for method in methods {
+            selectorOptions.append(XLFormOptionsObject(value: method, displayText: method))
+        }
+        row.selectorOptions = selectorOptions
+        row.value = XLFormOptionsObject(value: methods[0], displayText: methods[0])
         section.addFormRow(row)
+        section.addFormRow(XLFormRowDescriptor(tag: nil, rowType: XLFormRowDescriptorTypeURL, title: "URL"))
+        form.addFormSection(section)
         
-        self.form.addFormSection(section)
+        section = XLFormSectionDescriptor.formSection()
+        section.addFormRow(XLFormRowDescriptor(tag: nil, rowType: XLFormRowDescriptorTypeBooleanSwitch, title: "Basic Authentication"))
+        section.addFormRow(XLFormRowDescriptor(tag: nil, rowType: XLFormRowDescriptorTypeBooleanSwitch, title: "Additional Headers"))
+        form.addFormSection(section)
 
-        /*
-        
-        XLFormDescriptor * form;
-        XLFormSectionDescriptor * section;
-        XLFormRowDescriptor * row;
-        
-        form = [XLFormDescriptor formDescriptorWithTitle:@"Add Event"];
-        
-        // First section
-        section = [XLFormSectionDescriptor formSection];
-        [form addFormSection:section];
-        
-        // Title
-        row = [XLFormRowDescriptor formRowDescriptorWithTag:@"title" rowType:XLFormRowDescriptorTypeText];
-        [row.cellConfigAtConfigure setObject:@"Title" forKey:@"textField.placeholder"];
-        [section addFormRow:row];
-        
-        // Location
-        row = [XLFormRowDescriptor formRowDescriptorWithTag:@"location" rowType:XLFormRowDescriptorTypeText];
-        [row.cellConfigAtConfigure setObject:@"Location" forKey:@"textField.placeholder"];
-        [section addFormRow:row];
-        
-        // Second Section
-        section = [XLFormSectionDescriptor formSection];
-        [form addFormSection:section];
-        
-        // All-day
-        row = [XLFormRowDescriptor formRowDescriptorWithTag:@"all-day" rowType:XLFormRowDescriptorTypeBooleanSwitch title:@"All-day"];
-        [section addFormRow:row];
-        
-        // Starts
-        row = [XLFormRowDescriptor formRowDescriptorWithTag:@"starts" rowType:XLFormRowDescriptorTypeDateTimeInline title:@"Starts"];
-        row.value = [NSDate dateWithTimeIntervalSinceNow:60*60*24];
-        [section addFormRow:row];
+        section = XLFormSectionDescriptor.formSectionWithTitle("Basic Authentication")
+        section.addFormRow(XLFormRowDescriptor(tag: nil, rowType: XLFormRowDescriptorTypeAccount, title: "Username"))
+        section.addFormRow(XLFormRowDescriptor(tag: nil, rowType: XLFormRowDescriptorTypeAccount, title: "Password"))
+        form.addFormSection(section)
 
-         */
+        section = XLFormSectionDescriptor.formSectionWithTitle(
+            "Additional Headers",
+            sectionOptions: XLFormSectionOptions.CanInsert.union(.CanDelete).union(.CanReorder),
+            sectionInsertMode: .Button
+        )
+        row = XLFormRowDescriptor(tag: nil, rowType: XLFormRowDescriptorTypeSelectorPush, title: "Header")
+        row.selectorOptions = ["Option 1", "Option 2", "Option 3"]
+        section.multivaluedRowTemplate = row
+        form.addFormSection(section)
+        
+        section = XLFormSectionDescriptor.formSection()
+        section.addFormRow(XLFormRowDescriptor(tag: nil, rowType: XLFormRowDescriptorTypeBooleanSwitch, title: "Follow Redirects"))
+        form.addFormSection(section)
+        
+        self.form = form
     }
 
 }
