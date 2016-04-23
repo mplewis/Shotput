@@ -3,7 +3,17 @@ import XLForm
 import Alamofire
 import MapKit
 
+class Tags {
+    static let enableBasicAuth = "enableBasicAuth"
+    static let enableAddlHeaders = "enableAddlHeaders"
+}
+
 class SingleRequestViewController: XLFormViewController {
+    
+    var hiddenSections: [String: XLFormSectionDescriptor?] = [
+        Tags.enableBasicAuth: nil,
+        Tags.enableAddlHeaders: nil,
+    ]
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -27,13 +37,25 @@ class SingleRequestViewController: XLFormViewController {
         form.addFormSection(section)
         
         section = XLFormSectionDescriptor.formSection()
-        section.addFormRow(XLFormRowDescriptor(tag: nil, rowType: XLFormRowDescriptorTypeBooleanSwitch, title: "Basic Authentication"))
-        section.addFormRow(XLFormRowDescriptor(tag: nil, rowType: XLFormRowDescriptorTypeBooleanSwitch, title: "Additional Headers"))
+        section.addFormRow(XLFormRowDescriptor(
+            tag: Tags.enableBasicAuth,
+            rowType: XLFormRowDescriptorTypeBooleanSwitch,
+            title: "Basic Authentication"))
+        section.addFormRow(XLFormRowDescriptor(
+            tag: Tags.enableAddlHeaders,
+            rowType: XLFormRowDescriptorTypeBooleanSwitch,
+            title: "Additional Headers"))
+        section.addFormRow(XLFormRowDescriptor(
+            tag: nil,
+            rowType: XLFormRowDescriptorTypeBooleanSwitch,
+            title: "Follow Redirects"))
         form.addFormSection(section)
 
         section = XLFormSectionDescriptor.formSectionWithTitle("Basic Authentication")
         section.addFormRow(XLFormRowDescriptor(tag: nil, rowType: XLFormRowDescriptorTypeAccount, title: "Username"))
         section.addFormRow(XLFormRowDescriptor(tag: nil, rowType: XLFormRowDescriptorTypeAccount, title: "Password"))
+        section.hidden = true
+        hiddenSections[Tags.enableBasicAuth] = section;
         form.addFormSection(section)
 
         section = XLFormSectionDescriptor.formSectionWithTitle(
@@ -44,13 +66,17 @@ class SingleRequestViewController: XLFormViewController {
         row = XLFormRowDescriptor(tag: nil, rowType: XLFormRowDescriptorTypeSelectorPush, title: "Header")
         row.selectorOptions = ["Option 1", "Option 2", "Option 3"]
         section.multivaluedRowTemplate = row
-        form.addFormSection(section)
-        
-        section = XLFormSectionDescriptor.formSection()
-        section.addFormRow(XLFormRowDescriptor(tag: nil, rowType: XLFormRowDescriptorTypeBooleanSwitch, title: "Follow Redirects"))
+        section.hidden = true
+        hiddenSections[Tags.enableAddlHeaders] = section;
         form.addFormSection(section)
         
         self.form = form
     }
 
+    override func formRowDescriptorValueHasChanged(formRow: XLFormRowDescriptor!, oldValue: AnyObject!, newValue: AnyObject!) {
+        if let tag = formRow.tag, section = hiddenSections[tag], s = section {
+            s.hidden = !newValue.boolValue
+        }
+    }
+    
 }
