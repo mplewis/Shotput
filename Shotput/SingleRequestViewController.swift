@@ -79,8 +79,8 @@ class SingleRequestViewController: XLFormViewController {
 
         row = XLFormRowDescriptor(tag: Tag.URL.rawValue, rowType: XLFormRowDescriptorTypeURL, title: "URL")
         row.onChangeBlock = { [weak self] _, newValue, _ in
-            guard let raw = newValue as? String, url = NSURL(string: raw) else { return }
-            self?.url = url
+            guard let raw = newValue as? String else { return }
+            self?.url = NSURL(string: raw)  // could be nil
         }
         section.addFormRow(row)
 
@@ -149,7 +149,18 @@ class SingleRequestViewController: XLFormViewController {
     func buildSendRequestSection() -> XLFormSectionDescriptor {
         let section = XLFormSectionDescriptor.formSection()
         let row = XLFormRowDescriptor(tag: nil, rowType: XLFormRowDescriptorTypeButton, title: "Send Request")
-        row.action.formSegueIdenfifier = SegueIdentifier.SendRequestSegue.rawValue
+        row.action.formBlock = { [weak self] (sender: XLFormRowDescriptor!) in
+            if self?.url == nil {
+                let alert = UIAlertController(
+                    title: "Invalid URL",
+                    message: "Please enter a valid URL for this request.",
+                    preferredStyle: .Alert)
+                alert.addAction(UIAlertAction(title: "OK", style: .Default, handler: nil))
+                self?.presentViewController(alert, animated: true, completion: nil)
+                return
+            }
+            self?.performSegueWithIdentifier(SegueIdentifier.SendRequestSegue.rawValue, sender: self)
+        }
         section.addFormRow(row)
         return section
     }
