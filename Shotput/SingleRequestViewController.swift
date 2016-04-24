@@ -3,9 +3,12 @@ import XLForm
 import Alamofire
 import MapKit
 
-class Tags {
-    static let enableBasicAuth = "enableBasicAuth"
-    static let enableAddlHeaders = "enableAddlHeaders"
+enum Tag: String { case
+    Method = "Method",
+    URL = "URL",
+    EnableBasicAuth = "EnableBasicAuth",
+    EnableAddlHeaders = "EnableAddlHeaders",
+    FollowRedirects = "FollowRedirects"
 }
 
 enum SegueIdentifier: String {
@@ -14,10 +17,12 @@ enum SegueIdentifier: String {
 
 class SingleRequestViewController: XLFormViewController {
     
-    var hiddenSections: [String: XLFormSectionDescriptor?] = [
-        Tags.enableBasicAuth: nil,
-        Tags.enableAddlHeaders: nil,
-    ]
+    var basicAuthSection: XLFormSectionDescriptor?
+    var addlHeadersSection: XLFormSectionDescriptor?
+    
+    var method = Method.allValues[0]
+    var url: NSURL?
+    var followRedirects = false
     
     // MARK: - UIViewController
 
@@ -31,88 +36,122 @@ class SingleRequestViewController: XLFormViewController {
         switch identifier {
         case .SendRequestSegue:
             guard let dest = segue.destinationViewController as? SendRequestViewController else { return }
-        }
-    }
-    
-    // MARK: - XLForm
-
-    override func formRowDescriptorValueHasChanged(formRow: XLFormRowDescriptor!, oldValue: AnyObject!, newValue: AnyObject!) {
-        if let tag = formRow.tag, section = hiddenSections[tag], s = section {
-            s.hidden = !newValue.boolValue
+            guard let u = url else { return }
+            let request = Request(method: method, headers: nil, url: u, followRedirects: followRedirects)
+            dest.request = request
         }
     }
     
     // MARK: - Form builder
     
     func buildForm() -> XLFormDescriptor {
+        basicAuthSection = buildBasicAuthSection()
+        addlHeadersSection = buildAddlHeadersSection()
+
         let form = XLFormDescriptor(title: "Add Event")
-        var section: XLFormSectionDescriptor
-        var row: XLFormRowDescriptor
-        
-        // MARK: Method and URL
-        
-        section = XLFormSectionDescriptor.formSection()
-        row = XLFormRowDescriptor(tag: nil, rowType:XLFormRowDescriptorTypeSelectorPush, title: "Method")
+        form.addFormSection(buildMethodAndURLSection())
+        form.addFormSection(buildOptionsTogglesSection())
+        form.addFormSection(basicAuthSection!)
+        form.addFormSection(addlHeadersSection!)
+        form.addFormSection(buildSendRequestSection())
+        return form
+    }
+    
+    func buildMethodAndURLSection() -> XLFormSectionDescriptor {
+        let section = XLFormSectionDescriptor.formSection()
+
+        var row = XLFormRowDescriptor(tag: Tag.Method.rawValue, rowType:XLFormRowDescriptorTypeSelectorPush, title: "Method")
         var selectorOptions: [XLFormOptionsObject] = []
-        let methods = Method.allValues
-        for method in methods {
-            selectorOptions.append(XLFormOptionsObject(value: method.rawValue, displayText: "\(method)"))
+        for oneMethod in Method.allValues {
+            selectorOptions.append(XLFormOptionsObject(value: oneMethod.rawValue, displayText: "\(oneMethod)"))
         }
         row.selectorOptions = selectorOptions
-        row.value = XLFormOptionsObject(value: methods[0].rawValue, displayText: "\(methods[0])")
+        row.value = XLFormOptionsObject(value: method.rawValue, displayText: "\(method)")
+        row.onChangeBlock = { [weak self] _, newValue, _ in
+            guard let
+                opt = newValue as? XLFormOptionsObject,
+                raw = opt.valueData() as? Int,
+                method = Method.fromRaw(raw)
+                else { return }
+            self?.method = method
+        }
         section.addFormRow(row)
-        section.addFormRow(XLFormRowDescriptor(tag: nil, rowType: XLFormRowDescriptorTypeURL, title: "URL"))
-        form.addFormSection(section)
+
+        row = XLFormRowDescriptor(tag: Tag.URL.rawValue, rowType: XLFormRowDescriptorTypeURL, title: "URL")
+        row.onChangeBlock = { [weak self] _, newValue, _ in
+            guard let raw = newValue as? String, url = NSURL(string: raw) else { return }
+            self?.url = url
+        }
+        section.addFormRow(row)
+
+        return section
+    }
+    
+    func buildOptionsTogglesSection() -> XLFormSectionDescriptor {
+        let section = XLFormSectionDescriptor.formSection()
         
-        // MARK: Options toggles
-        
-        section = XLFormSectionDescriptor.formSection()
-        section.addFormRow(XLFormRowDescriptor(
-            tag: Tags.enableBasicAuth,
+        var row = XLFormRowDescriptor(
+            tag: Tag.EnableBasicAuth.rawValue,
             rowType: XLFormRowDescriptorTypeBooleanSwitch,
-            title: "Basic Authentication"))
-        section.addFormRow(XLFormRowDescriptor(
-            tag: Tags.enableAddlHeaders,
-            rowType: XLFormRowDescriptorTypeBooleanSwitch,
-            title: "Additional Headers"))
-        section.addFormRow(XLFormRowDescriptor(
-            tag: nil,
-            rowType: XLFormRowDescriptorTypeBooleanSwitch,
-            title: "Follow Redirects"))
-        form.addFormSection(section)
+            title: "Basic Authentication")
+        row.onChangeBlock = { [weak self] _, newValue, _ in
+            guard let show = newValue as? Bool else { return }
+            self?.basicAuthSection?.hidden = !show
+        }
+        section.addFormRow(row)
         
-        // MARK: Basic auth
+        row = XLFormRowDescriptor(
+            tag: Tag.EnableAddlHeaders.rawValue,
+            rowType: XLFormRowDescriptorTypeBooleanSwitch,
+            title: "Additional Headers")
+        row.onChangeBlock = { [weak self] _, newValue, _ in
+            guard let show = newValue as? Bool else { return }
+            self?.addlHeadersSection?.hidden = !show
+        }
+        section.addFormRow(row)
         
-        section = XLFormSectionDescriptor.formSectionWithTitle("Basic Authentication")
+        row = XLFormRowDescriptor(
+            tag: Tag.FollowRedirects.rawValue,
+            rowType: XLFormRowDescriptorTypeBooleanSwitch,
+            title: "Follow Redirects")
+        row.value = false
+        row.onChangeBlock = { [weak self] _, newValue, _ in
+            guard let followRedirects = newValue as? Bool else { return }
+            self?.followRedirects = followRedirects
+        }
+        section.addFormRow(row)
+        
+        return section
+    }
+    
+    func buildBasicAuthSection() -> XLFormSectionDescriptor {
+        let section = XLFormSectionDescriptor.formSectionWithTitle("Basic Authentication")
         section.addFormRow(XLFormRowDescriptor(tag: nil, rowType: XLFormRowDescriptorTypeAccount, title: "Username"))
         section.addFormRow(XLFormRowDescriptor(tag: nil, rowType: XLFormRowDescriptorTypeAccount, title: "Password"))
         section.hidden = true
-        hiddenSections[Tags.enableBasicAuth] = section;
-        form.addFormSection(section)
-        
-        // MARK: Additional headers
-        
-        section = XLFormSectionDescriptor.formSectionWithTitle(
+        return section
+    }
+    
+    func buildAddlHeadersSection() -> XLFormSectionDescriptor {
+        let section = XLFormSectionDescriptor.formSectionWithTitle(
             "Additional Headers",
             sectionOptions: XLFormSectionOptions.CanInsert.union(.CanDelete).union(.CanReorder),
             sectionInsertMode: .Button
         )
-        row = XLFormRowDescriptor(tag: nil, rowType: XLFormRowDescriptorTypeSelectorPush, title: "Header")
+        let row = XLFormRowDescriptor(tag: nil, rowType: XLFormRowDescriptorTypeSelectorPush, title: "Header")
         row.selectorOptions = ["Option 1", "Option 2", "Option 3"]
         section.multivaluedRowTemplate = row
         section.hidden = true
-        hiddenSections[Tags.enableAddlHeaders] = section;
-        form.addFormSection(section)
-        
-        // MARK: Send Request
-        
-        section = XLFormSectionDescriptor.formSection()
-        row = XLFormRowDescriptor(tag: nil, rowType: XLFormRowDescriptorTypeButton, title: "Send Request")
+        addlHeadersSection = section
+        return section
+    }
+    
+    func buildSendRequestSection() -> XLFormSectionDescriptor {
+        let section = XLFormSectionDescriptor.formSection()
+        let row = XLFormRowDescriptor(tag: nil, rowType: XLFormRowDescriptorTypeButton, title: "Send Request")
         row.action.formSegueIdenfifier = SegueIdentifier.SendRequestSegue.rawValue
         section.addFormRow(row)
-        form.addFormSection(section)
-        
-        return form
+        return section
     }
     
 }
