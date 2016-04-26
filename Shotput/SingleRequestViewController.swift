@@ -35,7 +35,7 @@ class SingleRequestViewController: XLFormViewController {
         guard let raw = segue.identifier, identifier = SegueIdentifier.init(rawValue: raw) else { return }
         switch identifier {
         case .SendRequestSegue:
-            guard let dest = segue.destinationViewController as? SendRequestViewController else { return }
+            guard let dest = segue.destinationViewController as? ResultsTabBarController else { return }
             guard let u = url else { return }
             let request = Request(method: method, headers: nil, url: u, followRedirects: followRedirects)
             dest.request = request
